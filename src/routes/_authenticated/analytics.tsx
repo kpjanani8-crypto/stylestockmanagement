@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 });
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const COLORS = ["oklch(0.78 0.14 82)", "oklch(0.6 0.18 250)", "oklch(0.65 0.16 150)", "oklch(0.65 0.2 25)", "oklch(0.55 0.18 300)"];
+const COLORS = ["oklch(0.65 0.16 150)", "oklch(0.65 0.2 25)", "oklch(0.78 0.14 82)", "oklch(0.6 0.18 250)"];
 
 function AnalyticsPage() {
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: listProducts });
