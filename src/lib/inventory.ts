@@ -4,7 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Product = Tables<"products">;
 export type Sale = Tables<"sales">;
 
-export const COST_RATIO = 0.7; // cost = 70% of price
+export const COST_RATIO = 0.7; // fallback when no cost_price is set on a product
 
 export async function listProducts(): Promise<Product[]> {
   const { data, error } = await supabase
