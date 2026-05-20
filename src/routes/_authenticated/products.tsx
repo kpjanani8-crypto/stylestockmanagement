@@ -74,6 +74,7 @@ function ProductsPage() {
               <tr className="text-left">
                 <th className="px-4 py-3 font-semibold">Image</th>
                 <th className="px-4 py-3 font-semibold">Name</th>
+                <th className="px-4 py-3 font-semibold text-right">Cost</th>
                 <th className="px-4 py-3 font-semibold text-right">Price</th>
                 <th className="px-4 py-3 font-semibold text-right">Stock</th>
                 <th className="px-4 py-3 font-semibold text-right">Sold</th>
@@ -82,12 +83,14 @@ function ProductsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">Loading…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                   {products.length === 0 ? "No products yet. Click Add product to get started." : "No matches."}
                 </td></tr>
-              ) : filtered.map((p) => (
+              ) : filtered.map((p) => {
+                const cost = Number((p as any).cost_price ?? 0);
+                return (
                 <tr key={p.id} className="border-t hover:bg-secondary/30 transition">
                   <td className="px-4 py-3">
                     {p.image_url ? (
@@ -99,21 +102,26 @@ function ProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 font-medium">{p.name}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {cost > 0 ? `₹${cost.toLocaleString("en-IN")}` : <span className="text-destructive text-xs">set cost</span>}
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums">₹{Number(p.price).toLocaleString("en-IN")}</td>
                   <td className="px-4 py-3 text-right">
                     <StockBadge qty={p.quantity} />
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{p.sold}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
                       <SellButton product={p} />
+                      <EditButton product={p} />
                       <Button size="icon" variant="ghost" onClick={() => delMut.mutate(p.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
