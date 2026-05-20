@@ -38,6 +38,11 @@ export async function createProduct(input: { name: string; price: number; cost_p
   if (error) throw error;
 }
 
+export async function updateProduct(id: string, patch: { name?: string; price?: number; cost_price?: number; quantity?: number; image_url?: string | null; }) {
+  const { error } = await supabase.from("products").update(patch as any).eq("id", id);
+  if (error) throw error;
+}
+
 export async function deleteProduct(id: string) {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
