@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       products: {
         Row: {
+          cost_price: number
           created_at: string
           id: string
           image_url: string | null
@@ -27,6 +28,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cost_price?: number
           created_at?: string
           id?: string
           image_url?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cost_price?: number
           created_at?: string
           id?: string
           image_url?: string | null
