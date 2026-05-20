@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
-import { listProducts, listSales, COST_RATIO } from "@/lib/inventory";
+import { listProducts, listSales, computeSummary, COST_RATIO } from "@/lib/inventory";
 import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
