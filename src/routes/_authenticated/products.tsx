@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { listProducts, createProduct, deleteProduct, sellProduct, type Product } from "@/lib/inventory";
+import { listProducts, createProduct, deleteProduct, sellProduct, downloadInvoice, type Product } from "@/lib/inventory";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
