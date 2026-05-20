@@ -125,20 +125,18 @@ export function computeSummary(products: Product[], sales: Sale[] = []) {
   const totalStock = products.reduce((s, p) => s + p.quantity, 0);
   const totalSold = sales.reduce((s, x) => s + x.quantity, 0);
 
-  let revenue = 0;
-  let cost = 0;
-  let profit = 0;
-  let loss = 0;
+  let revenue = 0;   // net amount actually collected
+  let cost = 0;      // cost basis of goods sold
+  let loss = 0;      // money lost to discounts (gross - net)
   for (const sale of sales) {
     const gross = Number(sale.unit_price) * sale.quantity;
-    const net = gross * (1 - Number(sale.discount) / 100); // what customer actually paid
-    const itemCost = gross * COST_RATIO;                   // cost basis (independent of discount)
-    const margin = net - itemCost;                         // per-sale P&L
+    const discAmt = gross * (Number(sale.discount) / 100);
+    const net = gross - discAmt;
     revenue += net;
-    cost += itemCost;
-    if (margin >= 0) profit += margin;
-    else loss += -margin;
+    cost += gross * COST_RATIO;
+    loss += discAmt;
   }
+  const profit = Math.max(revenue - cost, 0);
 
   return { totalProducts, totalStock, totalSold, revenue, cost, profit, loss };
 }
