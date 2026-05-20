@@ -132,6 +132,7 @@ function AddProductDialog({ onDone }: { onDone: () => void }) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -148,15 +149,18 @@ function AddProductDialog({ onDone }: { onDone: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = productSchema.safeParse({
-      name, price: Number(price), quantity: Number(quantity),
+      name, price: Number(price), cost_price: Number(costPrice), quantity: Number(quantity),
     });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    if (parsed.data.cost_price > parsed.data.price) {
+      toast.error("Cost price is higher than selling price — you'll lose money on every sale.");
+    }
     setSubmitting(true);
     try {
       await createProduct({ ...parsed.data, image_url: imageUrl });
       qc.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product added");
-      setName(""); setPrice(""); setQuantity(""); setImageUrl(null);
+      setName(""); setPrice(""); setCostPrice(""); setQuantity(""); setImageUrl(null);
       onDone();
     } catch (err: any) { toast.error(err.message); }
     finally { setSubmitting(false); }
@@ -172,13 +176,17 @@ function AddProductDialog({ onDone }: { onDone: () => void }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label>Price (₹)</Label>
-            <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="2499" />
+            <Label>Cost price (₹)</Label>
+            <Input type="number" min="0" step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="1500" />
           </div>
           <div className="space-y-2">
-            <Label>Quantity</Label>
-            <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="20" />
+            <Label>Selling price (₹)</Label>
+            <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="2499" />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Quantity</Label>
+          <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="20" />
         </div>
         <div className="space-y-2">
           <Label>Image</Label>
