@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { listProducts, createProduct, deleteProduct, sellProduct, downloadInvoice, type Product } from "@/lib/inventory";
+import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, downloadInvoice, type Product } from "@/lib/inventory";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,7 @@ function ProductsPage() {
               <tr className="text-left">
                 <th className="px-4 py-3 font-semibold">Image</th>
                 <th className="px-4 py-3 font-semibold">Name</th>
+                <th className="px-4 py-3 font-semibold text-right">Cost</th>
                 <th className="px-4 py-3 font-semibold text-right">Price</th>
                 <th className="px-4 py-3 font-semibold text-right">Stock</th>
                 <th className="px-4 py-3 font-semibold text-right">Sold</th>
@@ -82,12 +83,14 @@ function ProductsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">Loading…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                   {products.length === 0 ? "No products yet. Click Add product to get started." : "No matches."}
                 </td></tr>
-              ) : filtered.map((p) => (
+              ) : filtered.map((p) => {
+                const cost = Number((p as any).cost_price ?? 0);
+                return (
                 <tr key={p.id} className="border-t hover:bg-secondary/30 transition">
                   <td className="px-4 py-3">
                     {p.image_url ? (
@@ -99,21 +102,26 @@ function ProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 font-medium">{p.name}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {cost > 0 ? `₹${cost.toLocaleString("en-IN")}` : <span className="text-destructive text-xs">set cost</span>}
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums">₹{Number(p.price).toLocaleString("en-IN")}</td>
                   <td className="px-4 py-3 text-right">
                     <StockBadge qty={p.quantity} />
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{p.sold}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
                       <SellButton product={p} />
+                      <EditButton product={p} />
                       <Button size="icon" variant="ghost" onClick={() => delMut.mutate(p.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -262,6 +270,68 @@ function SellButton({ product }: { product: Product }) {
         <DialogFooter>
           <Button onClick={handleSell} disabled={busy || q < 1} className="gold-gradient text-primary-foreground font-semibold">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & download invoice"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditButton({ product }: { product: Product }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(String(product.price));
+  const [costPrice, setCostPrice] = useState(String((product as any).cost_price ?? ""));
+  const [quantity, setQuantity] = useState(String(product.quantity));
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    const p = Number(price), c = Number(costPrice), q = Number(quantity);
+    if (!name.trim()) { toast.error("Name required"); return; }
+    if (!(p > 0)) { toast.error("Selling price must be > 0"); return; }
+    if (c < 0) { toast.error("Cost price must be ≥ 0"); return; }
+    if (!Number.isInteger(q) || q < 0) { toast.error("Quantity invalid"); return; }
+    setBusy(true);
+    try {
+      await updateProduct(product.id, { name: name.trim(), price: p, cost_price: c, quantity: q });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated");
+      setOpen(false);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="ghost"><Pencil className="h-4 w-4" /></Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader><DialogTitle>Edit product</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Cost price (₹)</Label>
+              <Input type="number" min="0" step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Selling price (₹)</Label>
+              <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Stock quantity</Label>
+            <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={save} disabled={busy} className="gold-gradient text-primary-foreground font-semibold">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
