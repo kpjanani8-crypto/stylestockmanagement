@@ -53,6 +53,7 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          discount: number
           id: string
           product_id: string
           quantity: number
@@ -61,6 +62,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discount?: number
           id?: string
           product_id: string
           quantity: number
@@ -69,6 +71,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discount?: number
           id?: string
           product_id?: string
           quantity?: number
