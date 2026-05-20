@@ -198,17 +198,26 @@ function SellButton({ product }: { product: Product }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState("1");
+  const [discount, setDiscount] = useState("0");
   const [busy, setBusy] = useState(false);
+
+  const q = Math.max(0, Number(qty) || 0);
+  const d = Math.min(100, Math.max(0, Number(discount) || 0));
+  const subtotal = q * Number(product.price);
+  const total = subtotal * (1 - d / 100);
 
   const handleSell = async () => {
     setBusy(true);
     try {
-      await sellProduct(product, Number(qty));
+      const sale = await sellProduct(product, q, d);
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
-      toast.success(`Sold ${qty} × ${product.name}`);
+      toast.success(`Sold ${q} × ${product.name}`);
+      try {
+        downloadInvoice({ sale, product: { name: product.name } });
+      } catch (e: any) { toast.error(e.message); }
       setOpen(false);
-      setQty("1");
+      setQty("1"); setDiscount("0");
     } catch (err: any) { toast.error(err.message); }
     finally { setBusy(false); }
   };
@@ -220,16 +229,30 @@ function SellButton({ product }: { product: Product }) {
           <ShoppingCart className="h-3.5 w-3.5 mr-1.5" /> Sell
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xs">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader><DialogTitle>Sell {product.name}</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <div className="text-sm text-muted-foreground">Available: <span className="font-semibold text-foreground">{product.quantity}</span></div>
-          <Label>Quantity</Label>
-          <Input type="number" min="1" max={product.quantity} value={qty} onChange={(e) => setQty(e.target.value)} />
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">Available: <span className="font-semibold text-foreground">{product.quantity}</span> · Price: <span className="font-semibold text-foreground">₹{Number(product.price).toLocaleString("en-IN")}</span></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Quantity</Label>
+              <Input type="number" min="1" max={product.quantity} value={qty} onChange={(e) => setQty(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Discount (%)</Label>
+              <Input type="number" min="0" max="100" step="0.5" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+            </div>
+          </div>
+          <div className="rounded-lg border bg-secondary/40 p-3 space-y-1.5 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="tabular-nums">₹{subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="tabular-nums text-primary">− ₹{(subtotal - total).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
+            <div className="flex justify-between border-t pt-1.5 font-semibold"><span>Total</span><span className="tabular-nums">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
+          </div>
+          <p className="text-xs text-muted-foreground">Invoice will open for download after confirming.</p>
         </div>
         <DialogFooter>
-          <Button onClick={handleSell} disabled={busy} className="gold-gradient text-primary-foreground font-semibold">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm sale"}
+          <Button onClick={handleSell} disabled={busy || q < 1} className="gold-gradient text-primary-foreground font-semibold">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & download invoice"}
           </Button>
         </DialogFooter>
       </DialogContent>
