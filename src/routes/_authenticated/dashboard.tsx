@@ -38,8 +38,8 @@ function DashboardPage() {
         <KpiCard label="Total Stock" value={s.totalStock} icon={Boxes} accent="violet" />
         <KpiCard label="Total Sold" value={s.totalSold} icon={ShoppingCart} accent="gold" />
         <KpiCard label="Revenue" value={s.revenue} prefix="₹" decimals={0} icon={IndianRupee} accent="green" />
-        <KpiCard label="Profit" value={s.profit} prefix="₹" decimals={0} icon={TrendingUp} accent="green" hint="30% margin" />
-        <KpiCard label="Loss" value={s.loss} prefix="₹" decimals={0} icon={TrendingDown} accent="red" hint="from discounts" />
+        <KpiCard label="Profit" value={s.profit} prefix="₹" decimals={0} icon={TrendingUp} accent="green" hint="revenue − cost" />
+        <KpiCard label="Loss" value={s.loss} prefix="₹" decimals={0} icon={TrendingDown} accent="red" hint="sold below cost" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
