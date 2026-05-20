@@ -21,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/products")({
 
 const productSchema = z.object({
   name: z.string().trim().min(1, "Name required").max(120),
-  price: z.number().positive("Price must be > 0"),
+  price: z.number().positive("Selling price must be > 0"),
+  cost_price: z.number().min(0, "Cost price must be ≥ 0"),
   quantity: z.number().int().min(0),
 });
 
