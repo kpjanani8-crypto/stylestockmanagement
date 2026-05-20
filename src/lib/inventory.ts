@@ -24,16 +24,17 @@ export async function listSales(): Promise<Sale[]> {
   return data ?? [];
 }
 
-export async function createProduct(input: { name: string; price: number; quantity: number; image_url?: string | null; }) {
+export async function createProduct(input: { name: string; price: number; cost_price: number; quantity: number; image_url?: string | null; }) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Not authenticated");
   const { error } = await supabase.from("products").insert({
     user_id: u.user.id,
     name: input.name,
     price: input.price,
+    cost_price: input.cost_price,
     quantity: input.quantity,
     image_url: input.image_url ?? null,
-  });
+  } as any);
   if (error) throw error;
 }
 
