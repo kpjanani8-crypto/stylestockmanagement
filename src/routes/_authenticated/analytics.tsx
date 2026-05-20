@@ -64,7 +64,7 @@ function AnalyticsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold font-display mb-4">Profit vs Cost</h2>
+          <h2 className="text-lg font-semibold font-display mb-4">Profit vs Loss</h2>
           {pieData.length === 0 ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height={320}>
               <PieChart>
