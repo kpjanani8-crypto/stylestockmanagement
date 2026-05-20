@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
-import { listProducts, listSales, COST_RATIO } from "@/lib/inventory";
+import { listProducts, listSales, computeSummary, COST_RATIO } from "@/lib/inventory";
 import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 });
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const COLORS = ["oklch(0.78 0.14 82)", "oklch(0.6 0.18 250)", "oklch(0.65 0.16 150)", "oklch(0.65 0.2 25)", "oklch(0.55 0.18 300)"];
+const COLORS = ["oklch(0.65 0.16 150)", "oklch(0.65 0.2 25)", "oklch(0.78 0.14 82)", "oklch(0.6 0.18 250)"];
 
 function AnalyticsPage() {
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: listProducts });
@@ -25,13 +25,10 @@ function AnalyticsPage() {
     .sort((a, b) => b.sold - a.sold)
     .slice(0, 8);
 
-  const totalRev = products.reduce((s, p) => s + Number(p.price) * p.sold, 0);
-  const totalCost = totalRev * COST_RATIO;
-  const net = totalRev - totalCost;
+  const summary = computeSummary(products, sales);
   const pieData = [
-    { name: "Profit", value: net >= 0 ? net : 0 },
-    { name: "Cost", value: totalCost },
-    { name: "Loss", value: net < 0 ? -net : 0 },
+    { name: "Profit", value: summary.profit },
+    { name: "Loss", value: summary.loss },
   ].filter((d) => d.value > 0);
 
   const monthly = MONTHS.map((m, i) => ({ month: m, revenue: 0, profit: 0 }));
@@ -67,7 +64,7 @@ function AnalyticsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold font-display mb-4">Profit vs Cost</h2>
+          <h2 className="text-lg font-semibold font-display mb-4">Profit vs Loss</h2>
           {pieData.length === 0 ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height={320}>
               <PieChart>
