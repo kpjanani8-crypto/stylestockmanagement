@@ -4,7 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Product = Tables<"products">;
 export type Sale = Tables<"sales">;
 
-export const COST_RATIO = 0.7; // cost = 70% of price
+export const COST_RATIO = 0.7; // fallback when no cost_price is set on a product
 
 export async function listProducts(): Promise<Product[]> {
   const { data, error } = await supabase
@@ -24,16 +24,17 @@ export async function listSales(): Promise<Sale[]> {
   return data ?? [];
 }
 
-export async function createProduct(input: { name: string; price: number; quantity: number; image_url?: string | null; }) {
+export async function createProduct(input: { name: string; price: number; cost_price: number; quantity: number; image_url?: string | null; }) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Not authenticated");
   const { error } = await supabase.from("products").insert({
     user_id: u.user.id,
     name: input.name,
     price: input.price,
+    cost_price: input.cost_price,
     quantity: input.quantity,
     image_url: input.image_url ?? null,
-  });
+  } as any);
   if (error) throw error;
 }
 
@@ -125,18 +126,28 @@ export function computeSummary(products: Product[], sales: Sale[] = []) {
   const totalStock = products.reduce((s, p) => s + p.quantity, 0);
   const totalSold = sales.reduce((s, x) => s + x.quantity, 0);
 
+  // Build a quick lookup of cost_price per product (fallback to estimate if 0/missing)
+  const costOf = (productId: string, unitPrice: number) => {
+    const p = products.find((x) => x.id === productId) as (Product & { cost_price?: number }) | undefined;
+    const cp = Number(p?.cost_price ?? 0);
+    return cp > 0 ? cp : unitPrice * COST_RATIO;
+  };
+
   let revenue = 0;   // net amount actually collected
-  let cost = 0;      // cost basis of goods sold
-  let loss = 0;      // money lost to discounts (gross - net)
+  let cost = 0;      // real cost of goods sold
+  let loss = 0;      // sales that closed below cost (selling under cost)
+  let profit = 0;    // sales that closed above cost
   for (const sale of sales) {
-    const gross = Number(sale.unit_price) * sale.quantity;
-    const discAmt = gross * (Number(sale.discount) / 100);
-    const net = gross - discAmt;
+    const unit = Number(sale.unit_price);
+    const gross = unit * sale.quantity;
+    const net = gross * (1 - Number(sale.discount) / 100);
+    const itemCost = costOf(sale.product_id, unit) * sale.quantity;
+    const margin = net - itemCost;
     revenue += net;
-    cost += gross * COST_RATIO;
-    loss += discAmt;
+    cost += itemCost;
+    if (margin >= 0) profit += margin;
+    else loss += -margin;
   }
-  const profit = Math.max(revenue - cost, 0);
 
   return { totalProducts, totalStock, totalSold, revenue, cost, profit, loss };
 }
