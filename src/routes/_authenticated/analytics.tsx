@@ -25,13 +25,10 @@ function AnalyticsPage() {
     .sort((a, b) => b.sold - a.sold)
     .slice(0, 8);
 
-  const totalRev = products.reduce((s, p) => s + Number(p.price) * p.sold, 0);
-  const totalCost = totalRev * COST_RATIO;
-  const net = totalRev - totalCost;
+  const summary = computeSummary(products, sales);
   const pieData = [
-    { name: "Profit", value: net >= 0 ? net : 0 },
-    { name: "Cost", value: totalCost },
-    { name: "Loss", value: net < 0 ? -net : 0 },
+    { name: "Profit", value: summary.profit },
+    { name: "Loss", value: summary.loss },
   ].filter((d) => d.value > 0);
 
   const monthly = MONTHS.map((m, i) => ({ month: m, revenue: 0, profit: 0 }));
