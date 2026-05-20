@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Boxes, Package, ShoppingCart, IndianRupee, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
-import { listProducts, computeSummary } from "@/lib/inventory";
+import { listProducts, listSales, computeSummary } from "@/lib/inventory";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,8 @@ function DashboardPage() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"], queryFn: listProducts,
   });
-  const s = computeSummary(products);
+  const { data: sales = [] } = useQuery({ queryKey: ["sales"], queryFn: listSales });
+  const s = computeSummary(products, sales);
   const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= 5);
   const outOfStock = products.filter((p) => p.quantity === 0);
 
