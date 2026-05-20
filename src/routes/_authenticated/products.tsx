@@ -276,3 +276,65 @@ function SellButton({ product }: { product: Product }) {
     </Dialog>
   );
 }
+
+function EditButton({ product }: { product: Product }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(String(product.price));
+  const [costPrice, setCostPrice] = useState(String((product as any).cost_price ?? ""));
+  const [quantity, setQuantity] = useState(String(product.quantity));
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    const p = Number(price), c = Number(costPrice), q = Number(quantity);
+    if (!name.trim()) { toast.error("Name required"); return; }
+    if (!(p > 0)) { toast.error("Selling price must be > 0"); return; }
+    if (c < 0) { toast.error("Cost price must be ≥ 0"); return; }
+    if (!Number.isInteger(q) || q < 0) { toast.error("Quantity invalid"); return; }
+    setBusy(true);
+    try {
+      await updateProduct(product.id, { name: name.trim(), price: p, cost_price: c, quantity: q });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated");
+      setOpen(false);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="ghost"><Pencil className="h-4 w-4" /></Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader><DialogTitle>Edit product</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Cost price (₹)</Label>
+              <Input type="number" min="0" step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Selling price (₹)</Label>
+              <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Stock quantity</Label>
+            <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={save} disabled={busy} className="gold-gradient text-primary-foreground font-semibold">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
