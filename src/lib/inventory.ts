@@ -120,10 +120,15 @@ export function downloadInvoice(opts: {
 <div class="noprint" style="text-align:center;margin-top:32px"><button onclick="window.print()" style="background:#d4af37;color:#1a1a1a;border:0;padding:12px 28px;font-weight:700;border-radius:6px;cursor:pointer">Print / Save as PDF</button></div>
 <script>setTimeout(()=>window.print(),400)</script>
 </body></html>`;
-  const w = window.open("", "_blank");
-  if (!w) { throw new Error("Popup blocked — allow popups to download invoice"); }
-  w.document.write(html);
-  w.document.close();
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `invoice-${num}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function computeSummary(products: Product[], sales: Sale[] = []) {
