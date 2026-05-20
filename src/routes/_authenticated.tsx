@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
+  ssr: false,
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
