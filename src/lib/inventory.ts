@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { renderInvoiceHtml } from "./invoice/template";
+
 
 export type Product = Tables<"products">;
 export type Sale = Tables<"sales">;
@@ -72,54 +74,21 @@ export async function sellProduct(product: Product, qty: number, discount = 0) {
   return sale as Sale;
 }
 
+
 export function downloadInvoice(opts: {
   sale: { id: string; created_at: string; quantity: number; unit_price: number; discount: number };
   product: { name: string };
 }) {
   const { sale, product } = opts;
-  const subtotal = Number(sale.unit_price) * sale.quantity;
-  const discAmt = subtotal * (Number(sale.discount) / 100);
-  const total = subtotal - discAmt;
-  const inr = (n: number) => `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const date = new Date(sale.created_at).toLocaleString("en-IN");
   const num = sale.id.slice(0, 8).toUpperCase();
-
-  const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Invoice ${num}</title>
-<style>
-  *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-  body{margin:0;padding:48px;color:#1a1a1a;background:#fff}
-  .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #d4af37;padding-bottom:24px;margin-bottom:32px}
-  h1{margin:0;font-size:32px;letter-spacing:-0.5px}
-  .brand{color:#d4af37;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase}
-  .muted{color:#666;font-size:13px}
-  table{width:100%;border-collapse:collapse;margin:24px 0}
-  th,td{padding:14px;text-align:left;border-bottom:1px solid #eee}
-  th{background:#fafafa;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#666}
-  td.r,th.r{text-align:right}
-  .totals{margin-left:auto;width:280px;font-size:14px}
-  .totals .row{display:flex;justify-content:space-between;padding:8px 0}
-  .totals .grand{border-top:2px solid #1a1a1a;margin-top:8px;padding-top:14px;font-size:18px;font-weight:700}
-  .gold{color:#d4af37}
-  .foot{margin-top:48px;text-align:center;color:#999;font-size:12px}
-  @media print{body{padding:24px}.noprint{display:none}}
-</style></head><body>
-<div class="head">
-  <div><div class="brand">Style Stock Manager</div><h1>Invoice</h1></div>
-  <div style="text-align:right"><div class="muted">Invoice #</div><div style="font-weight:700">${num}</div><div class="muted" style="margin-top:8px">${date}</div></div>
-</div>
-<table>
-  <thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr></thead>
-  <tbody><tr><td>${product.name}</td><td class="r">${sale.quantity}</td><td class="r">${inr(Number(sale.unit_price))}</td><td class="r">${inr(subtotal)}</td></tr></tbody>
-</table>
-<div class="totals">
-  <div class="row"><span>Subtotal</span><span>${inr(subtotal)}</span></div>
-  <div class="row"><span>Discount (${Number(sale.discount)}%)</span><span class="gold">− ${inr(discAmt)}</span></div>
-  <div class="row grand"><span>Total</span><span>${inr(total)}</span></div>
-</div>
-<div class="foot">Thank you for your business · Style Stock Manager</div>
-<div class="noprint" style="text-align:center;margin-top:32px"><button onclick="window.print()" style="background:#d4af37;color:#1a1a1a;border:0;padding:12px 28px;font-weight:700;border-radius:6px;cursor:pointer">Print / Save as PDF</button></div>
-<script>setTimeout(()=>window.print(),400)</script>
-</body></html>`;
+  const html = renderInvoiceHtml({
+    num,
+    date: new Date(sale.created_at).toLocaleString("en-IN"),
+    productName: product.name,
+    quantity: sale.quantity,
+    unitPrice: Number(sale.unit_price),
+    discount: Number(sale.discount),
+  });
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
