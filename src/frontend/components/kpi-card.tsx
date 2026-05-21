@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { AnimatedCounter } from "@/components/animated-counter";
+import { AnimatedCounter } from "@/frontend/components/animated-counter";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
