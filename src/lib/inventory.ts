@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { renderInvoiceHtml } from "./invoice/template";
+
 
 export type Product = Tables<"products">;
 export type Sale = Tables<"sales">;
@@ -72,7 +74,6 @@ export async function sellProduct(product: Product, qty: number, discount = 0) {
   return sale as Sale;
 }
 
-import { renderInvoiceHtml } from "./invoice/template";
 
 export function downloadInvoice(opts: {
   sale: { id: string; created_at: string; quantity: number; unit_price: number; discount: number };
