@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { LayoutDashboard, Package, BarChart3, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/frontend/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
