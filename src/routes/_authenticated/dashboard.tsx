@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Boxes, Package, ShoppingCart, IndianRupee, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
-import { listProducts, listSales, computeSummary } from "@/lib/inventory";
+import { listProducts, listSales, computeSummary } from "@/backend/inventory";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
