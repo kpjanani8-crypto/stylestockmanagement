@@ -263,12 +263,12 @@ function SellButton({ product }: { product: Product }) {
             <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="tabular-nums text-primary">− ₹{(subtotal - total).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
             <div className="flex justify-between border-t pt-1.5 font-semibold"><span>Total</span><span className="tabular-nums">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
           </div>
-          <p className="text-xs text-muted-foreground">Invoice will open for download after confirming.</p>
         </div>
         <DialogFooter>
           <Button onClick={handleSell} disabled={busy || q < 1} className="gold-gradient text-primary-foreground font-semibold">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & download invoice"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm sale"}
           </Button>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>
