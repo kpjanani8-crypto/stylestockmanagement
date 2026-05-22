@@ -5,14 +5,14 @@ import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "
 import { toast } from "sonner";
 import { z } from "zod";
 import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, downloadInvoice, type Product } from "@/backend/inventory";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/frontend/ui/card";
+import { Button } from "@/frontend/ui/button";
+import { Input } from "@/frontend/ui/input";
+import { Label } from "@/frontend/ui/label";
+import { Badge } from "@/frontend/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/frontend/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/products")({
   head: () => ({ meta: [{ title: "Products — Style Stock Manager" }] }),

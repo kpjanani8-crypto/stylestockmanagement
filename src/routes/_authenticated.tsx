@@ -3,9 +3,9 @@ import { LayoutDashboard, Package, BarChart3, LogOut, Menu } from "lucide-react"
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/frontend/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import logo from "@/assets/logo.png";
+import { Button } from "@/frontend/ui/button";
+import { cn } from "@/frontend/lib/utils";
+import logo from "@/frontend/assets/logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {

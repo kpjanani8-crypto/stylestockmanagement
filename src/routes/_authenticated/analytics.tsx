@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
 import { listProducts, listSales, computeSummary, COST_RATIO } from "@/backend/inventory";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/frontend/ui/card";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Style Stock Manager" }] }),
