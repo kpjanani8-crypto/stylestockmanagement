@@ -226,15 +226,13 @@ function SellButton({ product }: { product: Product }) {
   const handleSell = async () => {
     setBusy(true);
     try {
-      const sale = await sellProduct(product, q, d);
+      await sellProduct(product, q, d);
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
       toast.success(`Sold ${q} × ${product.name}`);
-      try {
-        downloadInvoice({ sale, product: { name: product.name } });
-      } catch (e: any) { toast.error(e.message); }
       setOpen(false);
       setQty("1"); setDiscount("0");
+
     } catch (err: any) { toast.error(err.message); }
     finally { setBusy(false); }
   };
