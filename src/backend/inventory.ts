@@ -76,30 +76,28 @@ export async function sellProduct(product: Product, qty: number, discount = 0) {
 }
 
 
-export function downloadInvoice(opts: {
-  sale: { id: string; created_at: string; quantity: number; unit_price: number; discount: number };
-  product: { name: string };
+export function downloadMonthlyInvoice(opts: {
+  month: number; // 0-11
+  year: number;
+  sales: Sale[];
+  products: Product[];
 }) {
-  const { sale, product } = opts;
-  const num = sale.id.slice(0, 8).toUpperCase();
-  const html = renderInvoiceHtml({
-    num,
-    date: new Date(sale.created_at).toLocaleString("en-IN"),
-    productName: product.name,
-    quantity: sale.quantity,
-    unitPrice: Number(sale.unit_price),
-    discount: Number(sale.discount),
+  const monthSales = opts.sales.filter((s) => {
+    const d = new Date(s.created_at);
+    return d.getMonth() === opts.month && d.getFullYear() === opts.year;
   });
+  const html = renderMonthlyInvoiceHtml({ ...opts, sales: monthSales });
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `invoice-${num}.html`;
+  a.download = `invoice-${opts.year}-${String(opts.month + 1).padStart(2, "0")}.html`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
 
 export function computeSummary(products: Product[], sales: Sale[] = []) {
   const totalProducts = products.length;
