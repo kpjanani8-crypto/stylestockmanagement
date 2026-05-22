@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, downloadInvoice, type Product } from "@/backend/inventory";
+import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, type Product } from "@/backend/inventory";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
@@ -226,15 +226,13 @@ function SellButton({ product }: { product: Product }) {
   const handleSell = async () => {
     setBusy(true);
     try {
-      const sale = await sellProduct(product, q, d);
+      await sellProduct(product, q, d);
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
       toast.success(`Sold ${q} × ${product.name}`);
-      try {
-        downloadInvoice({ sale, product: { name: product.name } });
-      } catch (e: any) { toast.error(e.message); }
       setOpen(false);
       setQty("1"); setDiscount("0");
+
     } catch (err: any) { toast.error(err.message); }
     finally { setBusy(false); }
   };
@@ -265,12 +263,12 @@ function SellButton({ product }: { product: Product }) {
             <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="tabular-nums text-primary">− ₹{(subtotal - total).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
             <div className="flex justify-between border-t pt-1.5 font-semibold"><span>Total</span><span className="tabular-nums">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
           </div>
-          <p className="text-xs text-muted-foreground">Invoice will open for download after confirming.</p>
         </div>
         <DialogFooter>
           <Button onClick={handleSell} disabled={busy || q < 1} className="gold-gradient text-primary-foreground font-semibold">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & download invoice"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm sale"}
           </Button>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>
