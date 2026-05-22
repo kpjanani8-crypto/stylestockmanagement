@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { Download } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
-import { listProducts, listSales, computeSummary, COST_RATIO } from "@/backend/inventory";
+import { listProducts, listSales, computeSummary, downloadMonthlyInvoice, COST_RATIO } from "@/backend/inventory";
 import { Card } from "@/frontend/ui/card";
+import { Button } from "@/frontend/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/frontend/ui/select";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Style Stock Manager" }] }),
@@ -13,7 +17,9 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 });
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const COLORS = ["oklch(0.65 0.16 150)", "oklch(0.65 0.2 25)", "oklch(0.78 0.14 82)", "oklch(0.6 0.18 250)"];
+
 
 function AnalyticsPage() {
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: listProducts });
