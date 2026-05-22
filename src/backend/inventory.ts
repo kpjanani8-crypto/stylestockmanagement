@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { renderInvoiceHtml } from "./invoice/template";
+import { renderMonthlyInvoiceHtml } from "./invoice/monthly";
+
 
 
 export type Product = Tables<"products">;
