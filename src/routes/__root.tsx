@@ -8,10 +8,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/frontend/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-import appCss from "../styles.css?url";
+import appCss from "../frontend/styles.css?url";
 
 function NotFoundComponent() {
   return (

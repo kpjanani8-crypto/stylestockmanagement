@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Boxes, Package, ShoppingCart, IndianRupee, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { listProducts, listSales, computeSummary } from "@/backend/inventory";
 import { KpiCard } from "@/frontend/components/kpi-card";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/frontend/ui/card";
+import { Badge } from "@/frontend/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Style Stock Manager" }] }),

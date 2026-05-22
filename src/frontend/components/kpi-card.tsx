@@ -1,6 +1,6 @@
-import { Card } from "@/components/ui/card";
+import { Card } from "@/frontend/ui/card";
 import { AnimatedCounter } from "@/frontend/components/animated-counter";
-import { cn } from "@/lib/utils";
+import { cn } from "@/frontend/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
 interface Props {
