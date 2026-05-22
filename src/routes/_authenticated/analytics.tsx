@@ -46,12 +46,61 @@ function AnalyticsPage() {
     monthly[m].profit += rev * (1 - COST_RATIO);
   }
 
+  const now = new Date();
+  const [invMonth, setInvMonth] = useState(now.getMonth());
+  const [invYear, setInvYear] = useState(now.getFullYear());
+
+  const availableYears = useMemo(() => {
+    const years = new Set<number>([now.getFullYear()]);
+    for (const s of sales) years.add(new Date(s.created_at).getFullYear());
+    return Array.from(years).sort((a, b) => b - a);
+  }, [sales, now]);
+
+  const monthSalesCount = useMemo(
+    () => sales.filter((s) => {
+      const d = new Date(s.created_at);
+      return d.getMonth() === invMonth && d.getFullYear() === invYear;
+    }).length,
+    [sales, invMonth, invYear]
+  );
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display">Analytics</h1>
-        <p className="text-sm text-muted-foreground mt-1">Sales trends, profit breakdown & monthly performance</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold font-display">Analytics</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sales trends, profit breakdown & monthly performance</p>
+        </div>
       </div>
+
+      <Card className="p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+        <div className="flex-1">
+          <div className="font-semibold">Monthly invoice</div>
+          <div className="text-xs text-muted-foreground">
+            {monthSalesCount} sale{monthSalesCount === 1 ? "" : "s"} in {MONTH_NAMES[invMonth]} {invYear}
+          </div>
+        </div>
+        <Select value={String(invMonth)} onValueChange={(v) => setInvMonth(Number(v))}>
+          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i)}>{m}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={String(invYear)} onValueChange={(v) => setInvYear(Number(v))}>
+          <SelectTrigger className="w-[110px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {availableYears.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Button
+          disabled={monthSalesCount === 0}
+          onClick={() => downloadMonthlyInvoice({ month: invMonth, year: invYear, sales, products })}
+          className="gold-gradient text-primary-foreground font-semibold"
+        >
+          <Download className="h-4 w-4 mr-2" /> Download
+        </Button>
+      </Card>
+
 
       <div className="grid lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">
