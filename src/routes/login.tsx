@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, Sparkles } from "lucide-react";
@@ -22,8 +22,8 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
 
@@ -31,20 +31,34 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const normalizedEmail = email.trim();
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
-        toast.success("Account created! Signing you in…");
+        if (!data.session) {
+          toast.success("Account created. Check your email to confirm it, then sign in.");
+          setMode("signin");
+          return;
+        }
+        toast.success("Account created.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
+        if (!data.session) {
+          toast.info("Please confirm your email before signing in.");
+          return;
+        }
       }
       navigate({ to: "/dashboard" });
     } catch (err: any) {
-      toast.error(err.message ?? "Authentication failed");
+      const message = err?.message ?? "Authentication failed";
+      toast.error(/invalid login credentials/i.test(message)
+        ? "Invalid email or password. If you used Google before, choose Continue with Google."
+        : message);
     } finally {
       setLoading(false);
     }
@@ -52,7 +66,7 @@ function LoginPage() {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard` });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) {
       toast.error(result.error.message ?? "Google sign-in failed");
       setLoading(false);
@@ -118,9 +132,6 @@ function LoginPage() {
             </button>
           </p>
         </div>
-        <p className="text-center mt-4 text-xs text-white/40">
-          <Link to="/dashboard">Skip to dashboard →</Link>
-        </p>
       </div>
     </div>
   );
