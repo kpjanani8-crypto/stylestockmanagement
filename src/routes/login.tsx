@@ -32,7 +32,11 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const normalizedEmail = email.trim();
+      const normalizedEmail = email.trim().toLowerCase();
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters.");
+        return;
+      }
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
@@ -41,25 +45,47 @@ function LoginPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          toast.success("Account created. Check your email to confirm it, then sign in.");
-          setMode("signin");
-          return;
+          // Auto-confirm is on, but just in case — try signing in immediately.
+          const { data: s, error: sErr } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail, password,
+          });
+          if (sErr || !s.session) {
+            toast.success("Account created. You can now sign in.");
+            setMode("signin");
+            return;
+          }
         }
         toast.success("Welcome aboard!");
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-        if (error) throw error;
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail, password,
+        });
+        if (error) {
+          // If account doesn't exist, offer to create it seamlessly.
+          if (/invalid login credentials/i.test(error.message)) {
+            const { data: up, error: upErr } = await supabase.auth.signUp({
+              email: normalizedEmail, password,
+            });
+            if (upErr) throw upErr;
+            if (up.session) {
+              toast.success("Account created. Welcome!");
+              navigate({ to: "/dashboard" });
+              return;
+            }
+            toast.error("No account found with this email. Try a different password or create an account.");
+            return;
+          }
+          throw error;
+        }
         if (!data.session) {
           toast.info("Please confirm your email before signing in.");
           return;
         }
+        toast.success("Signed in.");
       }
       navigate({ to: "/dashboard" });
     } catch (err: any) {
-      const message = err?.message ?? "Authentication failed";
-      toast.error(/invalid login credentials/i.test(message)
-        ? "Invalid email or password. If you used Google before, choose Continue with Google."
-        : message);
+      toast.error(err?.message ?? "Authentication failed");
     } finally {
       setLoading(false);
     }
