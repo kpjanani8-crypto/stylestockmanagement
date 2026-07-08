@@ -230,7 +230,14 @@ function SellButton({ product }: { product: Product }) {
       await sellProduct(product, q, d);
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
-      toast.success(`Sold ${q} × ${product.name}`);
+      const shopName = ensureShopName();
+      openInvoiceWindow({
+        shopName,
+        invoiceNo: makeInvoiceNo(),
+        discountPercent: d,
+        items: [{ name: product.name, quantity: q, unit_price: Number(product.price) }],
+      });
+      toast.success(`Sold ${q} × ${product.name} — invoice ready`);
       setOpen(false);
       setQty("1"); setDiscount("0");
 
