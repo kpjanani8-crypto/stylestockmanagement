@@ -235,7 +235,7 @@ function LoginPage() {
                 {mode === "signin" && (
                   <button
                     type="button"
-                    onClick={() => toast.info("Use Continue with Google or contact support to reset.")}
+                    onClick={handleForgot}
                     className="text-xs text-muted-foreground hover:text-foreground transition"
                   >
                     Forgot?
