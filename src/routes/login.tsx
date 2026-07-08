@@ -265,7 +265,7 @@ function LoginPage() {
                 </button>
               </div>
               {mode === "signup" && (
-                <p className="text-xs text-muted-foreground">At least 6 characters.</p>
+                <p className="text-xs text-muted-foreground">At least 8 characters, including a letter and a number.</p>
               )}
             </div>
 
