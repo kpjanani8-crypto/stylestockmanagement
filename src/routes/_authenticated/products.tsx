@@ -5,6 +5,7 @@ import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "
 import { toast } from "sonner";
 import { z } from "zod";
 import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, type Product } from "@/backend/inventory";
+import { ensureShopName, makeInvoiceNo, openInvoiceWindow } from "@/frontend/lib/invoice";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
