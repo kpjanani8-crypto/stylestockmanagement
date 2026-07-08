@@ -28,16 +28,27 @@ function LoginPage() {
     });
   }, [navigate]);
 
+  const isValidEmail = (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      if (password.length < 6) {
-        toast.error("Password must be at least 6 characters.");
+      if (!isValidEmail(normalizedEmail)) {
+        toast.error("Please enter a valid email address.");
         return;
       }
       if (mode === "signup") {
+        if (password.length < 8) {
+          toast.error("Password must be at least 8 characters.");
+          return;
+        }
+        if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+          toast.error("Password must include letters and numbers.");
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -45,34 +56,29 @@ function LoginPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          // Auto-confirm is on, but just in case — try signing in immediately.
-          const { data: s, error: sErr } = await supabase.auth.signInWithPassword({
-            email: normalizedEmail, password,
-          });
-          if (sErr || !s.session) {
-            toast.success("Account created. You can now sign in.");
-            setMode("signin");
-            return;
-          }
+          toast.success("Check your inbox to confirm your email, then sign in.");
+          setMode("signin");
+          setPassword("");
+          return;
         }
         toast.success("Welcome aboard!");
+        navigate({ to: "/dashboard" });
       } else {
+        if (password.length < 1) {
+          toast.error("Enter your password.");
+          return;
+        }
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail, password,
+          email: normalizedEmail,
+          password,
         });
         if (error) {
-          // If account doesn't exist, offer to create it seamlessly.
+          if (/email not confirmed/i.test(error.message)) {
+            toast.error("Please confirm your email first. Check your inbox.");
+            return;
+          }
           if (/invalid login credentials/i.test(error.message)) {
-            const { data: up, error: upErr } = await supabase.auth.signUp({
-              email: normalizedEmail, password,
-            });
-            if (upErr) throw upErr;
-            if (up.session) {
-              toast.success("Account created. Welcome!");
-              navigate({ to: "/dashboard" });
-              return;
-            }
-            toast.error("No account found with this email. Try a different password or create an account.");
+            toast.error("Incorrect email or password.");
             return;
           }
           throw error;
@@ -82,13 +88,29 @@ function LoginPage() {
           return;
         }
         toast.success("Signed in.");
+        navigate({ to: "/dashboard" });
       }
-      navigate({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err?.message ?? "Authentication failed");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgot = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!isValidEmail(normalizedEmail)) {
+      toast.error("Enter your email above first, then tap Forgot.");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("If that email exists, a reset link is on its way.");
   };
 
   const handleGoogle = async () => {
