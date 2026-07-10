@@ -134,23 +134,16 @@ export function buildInvoiceHtml(inv: InvoiceInput): string {
 
 export function openInvoiceWindow(inv: InvoiceInput) {
   const html = buildInvoiceHtml(inv);
-  const w = window.open("", "_blank", "noopener,noreferrer,width=780,height=900");
-  if (!w) {
-    // Popup blocked — fall back to file download.
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `invoice-${inv.invoiceNo}.html`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    return;
-  }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  const safeShop = inv.shopName.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "shop";
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${safeShop}-${inv.invoiceNo}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function escapeHtml(s: string): string {
