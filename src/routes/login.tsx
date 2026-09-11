@@ -8,6 +8,7 @@ import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
 import { Label } from "@/frontend/ui/label";
 import logo from "@/frontend/assets/logo.png";
+import { validateRealEmail } from "@/frontend/lib/email-guard";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — Style Stock Manager" }] }),
@@ -28,16 +29,16 @@ function LoginPage() {
     });
   }, [navigate]);
 
-  const isValidEmail = (v: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const isValidEmail = (v: string) => validateRealEmail(v).ok;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      if (!isValidEmail(normalizedEmail)) {
-        toast.error("Please enter a valid email address.");
+      const check = validateRealEmail(normalizedEmail);
+      if (!check.ok) {
+        toast.error(check.reason);
         return;
       }
       if (mode === "signup") {
