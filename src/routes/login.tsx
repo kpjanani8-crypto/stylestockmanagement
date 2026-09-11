@@ -36,8 +36,9 @@ function LoginPage() {
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      if (!isValidEmail(normalizedEmail)) {
-        toast.error("Please enter a valid email address.");
+      const check = validateRealEmail(normalizedEmail);
+      if (!check.ok) {
+        toast.error(check.reason);
         return;
       }
       if (mode === "signup") {
