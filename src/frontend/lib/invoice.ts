@@ -109,6 +109,10 @@ export function buildInvoiceHtml(inv: InvoiceInput): string {
       <div>
         <div class="shop">${escapeHtml(inv.shopName)}</div>
         <div class="tag">Tax Invoice</div>
+        ${inv.shopAddress ? `<div style="font-size:12px;color:#555;margin-top:6px;white-space:pre-line;">${escapeHtml(inv.shopAddress)}</div>` : ""}
+        ${inv.shopPhone ? `<div style="font-size:12px;color:#555;">Phone: ${escapeHtml(inv.shopPhone)}</div>` : ""}
+        ${inv.shopEmail ? `<div style="font-size:12px;color:#555;">${escapeHtml(inv.shopEmail)}</div>` : ""}
+        ${inv.gstNumber ? `<div style="font-size:12px;color:#555;">GSTIN: ${escapeHtml(inv.gstNumber)}</div>` : ""}
       </div>
       <div class="meta">
         <div><strong>Invoice #</strong> ${escapeHtml(inv.invoiceNo)}</div>
@@ -131,7 +135,7 @@ export function buildInvoiceHtml(inv: InvoiceInput): string {
       <div class="row grand"><span>Total</span><span class="num">${money(total)}</span></div>
     </div>
 
-    <div class="foot">Thank you for shopping with ${escapeHtml(inv.shopName)}.</div>
+    <div class="foot">${escapeHtml(inv.footerNote || `Thank you for shopping with ${inv.shopName}.`)}</div>
   </div>
   <script>setTimeout(function(){ try { window.print(); } catch(e){} }, 400);</script>
 </body></html>`;
