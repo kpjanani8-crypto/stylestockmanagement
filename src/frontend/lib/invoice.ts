@@ -35,6 +35,11 @@ export type InvoiceItem = {
 
 export type InvoiceInput = {
   shopName: string;
+  shopAddress?: string;
+  shopPhone?: string;
+  shopEmail?: string;
+  gstNumber?: string;
+  footerNote?: string;
   invoiceNo: string;
   items: InvoiceItem[];
   discountPercent: number;
