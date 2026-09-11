@@ -91,6 +91,45 @@ export type Database = {
           },
         ]
       }
+      shop_profiles: {
+        Row: {
+          address: string
+          created_at: string
+          email: string
+          footer_note: string
+          gst_number: string
+          id: string
+          phone: string
+          shop_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          created_at?: string
+          email?: string
+          footer_note?: string
+          gst_number?: string
+          id?: string
+          phone?: string
+          shop_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          email?: string
+          footer_note?: string
+          gst_number?: string
+          id?: string
+          phone?: string
+          shop_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
