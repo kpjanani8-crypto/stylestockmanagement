@@ -20,7 +20,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/products", label: "Products", icon: Package },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/settings", label: "Shop profile", icon: Store },
+  { to: "/settings", label: "Settings", icon: Store },
 ] as const;
 
 function AuthLayout() {
