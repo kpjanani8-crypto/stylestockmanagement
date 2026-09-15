@@ -5,6 +5,7 @@ import { listProducts, listSales, computeSummary } from "@/backend/inventory";
 import { KpiCard } from "@/frontend/components/kpi-card";
 import { Card } from "@/frontend/ui/card";
 import { Badge } from "@/frontend/ui/badge";
+import { getLowStockThreshold } from "@/frontend/lib/billing-defaults";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Style Stock Manager" }] }),
@@ -17,7 +18,7 @@ function DashboardPage() {
   });
   const { data: sales = [] } = useQuery({ queryKey: ["sales"], queryFn: listSales });
   const s = computeSummary(products, sales);
-  const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= 5);
+  const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= getLowStockThreshold());
   const outOfStock = products.filter((p) => p.quantity === 0);
 
   return (

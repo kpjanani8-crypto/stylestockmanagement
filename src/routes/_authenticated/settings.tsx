@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Printer, Store } from "lucide-react";
+import { Loader2, Printer, Store, KeyRound, Sun, Moon, Percent } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getTheme, applyTheme, type ThemeMode } from "@/frontend/lib/theme";
+import {
+  getDefaultDiscount, setDefaultDiscount,
+  getLowStockThreshold, setLowStockThreshold,
+} from "@/frontend/lib/billing-defaults";
 import {
   getShopProfile,
   saveShopProfile,
@@ -19,7 +25,7 @@ import { printReceipt } from "@/frontend/lib/receipt";
 import { makeInvoiceNo } from "@/frontend/lib/invoice";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Shop profile — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Settings — Style Stock Manager" }] }),
   component: SettingsPage,
 });
 
@@ -98,11 +104,15 @@ function SettingsPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Shop profile</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          These details are printed on every bill and invoice.
+          Shop details, billing defaults, theme and account security.
         </p>
       </div>
+
+      <ThemeCard />
+      <BillingDefaultsCard />
+      <PasswordCard />
 
       <Card>
         <CardHeader>
@@ -192,5 +202,134 @@ function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function ThemeCard() {
+  const [theme, setTheme] = useState<ThemeMode>("light");
+  useEffect(() => setTheme(getTheme()), []);
+  const choose = (m: ThemeMode) => { setTheme(m); applyTheme(m); };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />} Theme
+        </CardTitle>
+        <CardDescription>Choose how the dashboard looks on this device.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 sm:grid-cols-2 max-w-sm">
+          {([["light", "Light", Sun], ["dark", "Dark", Moon]] as const).map(([value, label, Icon]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => choose(value)}
+              className={
+                "rounded-lg border p-3 text-left transition hover:border-primary flex items-center gap-3 " +
+                (theme === value ? "border-primary bg-accent" : "border-border")
+              }
+            >
+              <Icon className="h-4 w-4" />
+              <span className="text-sm font-semibold">{label}</span>
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BillingDefaultsCard() {
+  const [discount, setDiscount] = useState("0");
+  const [lowStock, setLowStock] = useState("5");
+
+  useEffect(() => {
+    setDiscount(String(getDefaultDiscount()));
+    setLowStock(String(getLowStockThreshold()));
+  }, []);
+
+  const save = () => {
+    setDefaultDiscount(Number(discount) || 0);
+    setLowStockThreshold(Number(lowStock) || 0);
+    toast.success("Billing defaults saved.");
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Percent className="h-4 w-4" /> Billing defaults
+        </CardTitle>
+        <CardDescription>Pre-filled on every new sale and used for low-stock warnings.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="def_discount">Default discount (%)</Label>
+            <Input id="def_discount" type="number" min="0" max="100" step="0.5" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="low_stock">Low stock warning at</Label>
+            <Input id="low_stock" type="number" min="0" step="1" value={lowStock} onChange={(e) => setLowStock(e.target.value)} />
+            <p className="text-xs text-muted-foreground">Products at or below this quantity show a warning badge.</p>
+          </div>
+        </div>
+        <Button onClick={save} className="gold-gradient text-primary-foreground font-semibold">Save defaults</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PasswordCard() {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const change = async () => {
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      toast.error("Password must be 8+ characters with letters and numbers.");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Password changed successfully.");
+      setPassword("");
+      setConfirm("");
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <KeyRound className="h-4 w-4" /> Change password
+        </CardTitle>
+        <CardDescription>Use at least 8 characters with letters and numbers.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="new_pw">New password</Label>
+            <Input id="new_pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm_pw">Confirm password</Label>
+            <Input id="confirm_pw" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+          </div>
+        </div>
+        <Button onClick={change} disabled={saving} variant="outline">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

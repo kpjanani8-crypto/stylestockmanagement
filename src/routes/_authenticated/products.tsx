@@ -9,6 +9,7 @@ import { makeInvoiceNo, openInvoiceWindow, type InvoiceInput } from "@/frontend/
 import { getShopProfile } from "@/backend/shop-profile";
 import { printReceipt } from "@/frontend/lib/receipt";
 import { getPaperWidth } from "@/frontend/lib/printer";
+import { getLowStockThreshold, getDefaultDiscount } from "@/frontend/lib/billing-defaults";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
@@ -136,7 +137,7 @@ function ProductsPage() {
 
 function StockBadge({ qty }: { qty: number }) {
   if (qty === 0) return <Badge variant="destructive">Out</Badge>;
-  if (qty <= 5) return <Badge className="bg-warning text-warning-foreground">{qty} left</Badge>;
+  if (qty <= getLowStockThreshold()) return <Badge className="bg-warning text-warning-foreground">{qty} left</Badge>;
   return <Badge variant="secondary" className="tabular-nums">{qty}</Badge>;
 }
 
@@ -219,7 +220,7 @@ function SellButton({ product }: { product: Product }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState("1");
-  const [discount, setDiscount] = useState("0");
+  const [discount, setDiscount] = useState(() => String(getDefaultDiscount()));
   const [busy, setBusy] = useState(false);
 
   const q = Math.max(0, Number(qty) || 0);
