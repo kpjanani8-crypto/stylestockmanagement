@@ -5,6 +5,7 @@ import { listProducts, listSales, computeSummary } from "@/backend/inventory";
 import { KpiCard } from "@/frontend/components/kpi-card";
 import { Card } from "@/frontend/ui/card";
 import { Badge } from "@/frontend/ui/badge";
+import { getLowStockThreshold } from "@/frontend/lib/billing-defaults";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Style Stock Manager" }] }),

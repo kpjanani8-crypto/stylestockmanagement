@@ -9,6 +9,7 @@ import { makeInvoiceNo, openInvoiceWindow, type InvoiceInput } from "@/frontend/
 import { getShopProfile } from "@/backend/shop-profile";
 import { printReceipt } from "@/frontend/lib/receipt";
 import { getPaperWidth } from "@/frontend/lib/printer";
+import { getLowStockThreshold, getDefaultDiscount } from "@/frontend/lib/billing-defaults";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
