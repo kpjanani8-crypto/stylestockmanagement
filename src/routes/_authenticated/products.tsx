@@ -136,7 +136,7 @@ function ProductsPage() {
 
 function StockBadge({ qty }: { qty: number }) {
   if (qty === 0) return <Badge variant="destructive">Out</Badge>;
-  if (qty <= 5) return <Badge className="bg-warning text-warning-foreground">{qty} left</Badge>;
+  if (qty <= getLowStockThreshold()) return <Badge className="bg-warning text-warning-foreground">{qty} left</Badge>;
   return <Badge variant="secondary" className="tabular-nums">{qty}</Badge>;
 }
 

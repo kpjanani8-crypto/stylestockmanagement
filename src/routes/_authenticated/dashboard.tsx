@@ -17,7 +17,7 @@ function DashboardPage() {
   });
   const { data: sales = [] } = useQuery({ queryKey: ["sales"], queryFn: listSales });
   const s = computeSummary(products, sales);
-  const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= 5);
+  const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= getLowStockThreshold());
   const outOfStock = products.filter((p) => p.quantity === 0);
 
   return (
