@@ -220,7 +220,7 @@ function SellButton({ product }: { product: Product }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState("1");
-  const [discount, setDiscount] = useState("0");
+  const [discount, setDiscount] = useState(() => String(getDefaultDiscount()));
   const [busy, setBusy] = useState(false);
 
   const q = Math.max(0, Number(qty) || 0);

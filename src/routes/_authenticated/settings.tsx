@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Printer, Store } from "lucide-react";
+import { Loader2, Printer, Store, KeyRound, Sun, Moon, Percent } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getTheme, applyTheme, type ThemeMode } from "@/frontend/lib/theme";
+import {
+  getDefaultDiscount, setDefaultDiscount,
+  getLowStockThreshold, setLowStockThreshold,
+} from "@/frontend/lib/billing-defaults";
 import {
   getShopProfile,
   saveShopProfile,
