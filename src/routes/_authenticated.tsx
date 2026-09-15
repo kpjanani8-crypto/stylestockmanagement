@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Package, BarChart3, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Package, BarChart3, LogOut, Menu, Store } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/frontend/hooks/use-auth";
@@ -20,6 +20,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/products", label: "Products", icon: Package },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/settings", label: "Shop profile", icon: Store },
 ] as const;
 
 function AuthLayout() {

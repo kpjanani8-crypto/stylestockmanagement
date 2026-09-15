@@ -5,7 +5,10 @@ import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "
 import { toast } from "sonner";
 import { z } from "zod";
 import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, type Product } from "@/backend/inventory";
-import { ensureShopName, makeInvoiceNo, openInvoiceWindow } from "@/frontend/lib/invoice";
+import { makeInvoiceNo, openInvoiceWindow, type InvoiceInput } from "@/frontend/lib/invoice";
+import { getShopProfile } from "@/backend/shop-profile";
+import { printReceipt } from "@/frontend/lib/receipt";
+import { getPaperWidth } from "@/frontend/lib/printer";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
@@ -230,14 +233,26 @@ function SellButton({ product }: { product: Product }) {
       await sellProduct(product, q, d);
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
-      const shopName = ensureShopName();
-      openInvoiceWindow({
-        shopName,
+      let profile = null as Awaited<ReturnType<typeof getShopProfile>>;
+      try {
+        profile = await getShopProfile();
+      } catch {
+        /* ignore — bill still prints with defaults */
+      }
+      const inv: InvoiceInput = {
+        shopName: profile?.shop_name || "My Shop",
+        shopAddress: profile?.address || "",
+        shopPhone: profile?.phone || "",
+        shopEmail: profile?.email || "",
+        gstNumber: profile?.gst_number || "",
+        footerNote: profile?.footer_note || "",
         invoiceNo: makeInvoiceNo(),
         discountPercent: d,
         items: [{ name: product.name, quantity: q, unit_price: Number(product.price) }],
-      });
-      toast.success(`Sold ${q} × ${product.name} — invoice ready`);
+      };
+      printReceipt(inv, getPaperWidth());
+      openInvoiceWindow(inv);
+      toast.success(`Sold ${q} × ${product.name} — bill sent to printer`);
       setOpen(false);
       setQty("1"); setDiscount("0");
 
