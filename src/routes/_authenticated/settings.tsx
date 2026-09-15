@@ -25,7 +25,7 @@ import { printReceipt } from "@/frontend/lib/receipt";
 import { makeInvoiceNo } from "@/frontend/lib/invoice";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Shop profile — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Settings — Style Stock Manager" }] }),
   component: SettingsPage,
 });
 
@@ -104,11 +104,15 @@ function SettingsPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Shop profile</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          These details are printed on every bill and invoice.
+          Shop details, billing defaults, theme and account security.
         </p>
       </div>
+
+      <ThemeCard />
+      <BillingDefaultsCard />
+      <PasswordCard />
 
       <Card>
         <CardHeader>
