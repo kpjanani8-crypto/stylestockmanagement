@@ -44,6 +44,9 @@ export type InvoiceInput = {
   items: InvoiceItem[];
   discountPercent: number;
   date?: Date;
+  customerName?: string;
+  customerPhone?: string;
+  paymentMethod?: string;
 };
 
 const money = (n: number) =>
@@ -120,6 +123,8 @@ export function buildInvoiceHtml(inv: InvoiceInput): string {
         <div><strong>Time</strong> ${date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
       </div>
     </div>
+    ${inv.customerName || inv.customerPhone ? `<div style="font-size:13px;margin:10px 0;"><strong>Bill to:</strong> ${escapeHtml(inv.customerName || "")}${inv.customerPhone ? ` · ${escapeHtml(inv.customerPhone)}` : ""}</div>` : ""}
+    ${inv.paymentMethod ? `<div style="font-size:13px;margin-bottom:10px;"><strong>Paid by:</strong> ${escapeHtml(inv.paymentMethod.toUpperCase())}</div>` : ""}
 
     <h2>Items</h2>
     <table>

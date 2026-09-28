@@ -78,6 +78,8 @@ export function buildReceiptHtml(inv: InvoiceInput, width: PaperWidth = "80mm"):
     <span>${date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
     <span>${date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
   </div>
+  ${inv.customerName ? `<div class="muted">Customer: ${escapeHtml(inv.customerName)}</div>` : ""}
+  ${inv.customerPhone ? `<div class="muted">Ph: ${escapeHtml(inv.customerPhone)}</div>` : ""}
   <hr/>
   <table>${rows}</table>
   <hr/>
@@ -85,6 +87,7 @@ export function buildReceiptHtml(inv: InvoiceInput, width: PaperWidth = "80mm"):
   ${line("Subtotal", money(subtotal))}
   ${inv.discountPercent > 0 ? line(`Discount (${inv.discountPercent}%)`, "- " + money(discountAmt)) : ""}
   ${line("TOTAL", "Rs " + money(total), "grand")}
+  ${inv.paymentMethod ? line("Paid by", escapeHtml(inv.paymentMethod.toUpperCase())) : ""}
   <hr/>
   <div class="center muted">${escapeHtml(inv.footerNote || "Thank you for shopping with us!")}</div>
   <div class="center muted">&nbsp;</div>
