@@ -18,7 +18,7 @@ export function renderMonthlyInvoiceHtml(opts: {
 
   const rows = sales.map((s) => {
     const p = productOf(s.product_id);
-    const subtotal = Number(s.unit_price) * s.quantity;
+    const subtotal = Number(s.unit_price) * (s.quantity - (s.returned_quantity ?? 0));
     const total = subtotal * (1 - Number(s.discount) / 100);
     return { s, name: p?.name ?? "(deleted product)", subtotal, total };
   });

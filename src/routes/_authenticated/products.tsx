@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, ShoppingCart, Search, ImageIcon, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, type Product } from "@/backend/inventory";
+import { listProducts, createProduct, updateProduct, deleteProduct, sellProduct, type Product, type PaymentMethod } from "@/backend/inventory";
 import { makeInvoiceNo, openInvoiceWindow, type InvoiceInput } from "@/frontend/lib/invoice";
 import { getShopProfile } from "@/backend/shop-profile";
 import { printReceipt } from "@/frontend/lib/receipt";
@@ -222,6 +222,9 @@ function SellButton({ product }: { product: Product }) {
   const [qty, setQty] = useState("1");
   const [discount, setDiscount] = useState(() => String(getDefaultDiscount()));
   const [busy, setBusy] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [payment, setPayment] = useState<PaymentMethod>("cash");
 
   const q = Math.max(0, Number(qty) || 0);
   const d = Math.min(100, Math.max(0, Number(discount) || 0));
@@ -231,7 +234,11 @@ function SellButton({ product }: { product: Product }) {
   const handleSell = async () => {
     setBusy(true);
     try {
-      await sellProduct(product, q, d);
+      if (customerPhone && !/^[+\d][\d\s-]{6,18}$/.test(customerPhone.trim())) {
+        throw new Error("Please enter a valid phone number.");
+      }
+      const invoiceNo = makeInvoiceNo();
+      await sellProduct(product, q, d, { customerName, customerPhone, paymentMethod: payment, invoiceNo });
       qc.invalidateQueries({ queryKey: ["products"] });
       qc.invalidateQueries({ queryKey: ["sales"] });
       let profile = null as Awaited<ReturnType<typeof getShopProfile>>;
@@ -247,15 +254,17 @@ function SellButton({ product }: { product: Product }) {
         shopEmail: profile?.email || "",
         gstNumber: profile?.gst_number || "",
         footerNote: profile?.footer_note || "",
-        invoiceNo: makeInvoiceNo(),
+        invoiceNo,
         discountPercent: d,
+        customerName, customerPhone, paymentMethod: payment,
         items: [{ name: product.name, quantity: q, unit_price: Number(product.price) }],
       };
       printReceipt(inv, getPaperWidth());
       openInvoiceWindow(inv);
       toast.success(`Sold ${q} × ${product.name} — bill sent to printer`);
       setOpen(false);
-      setQty("1"); setDiscount("0");
+      setQty("1"); setDiscount(String(getDefaultDiscount()));
+      setCustomerName(""); setCustomerPhone(""); setPayment("cash");
 
     } catch (err: any) { toast.error(err.message); }
     finally { setBusy(false); }
@@ -280,6 +289,27 @@ function SellButton({ product }: { product: Product }) {
             <div className="space-y-2">
               <Label>Discount (%)</Label>
               <Input type="number" min="0" max="100" step="0.5" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Customer name</Label>
+              <Input value={customerName} maxLength={100} onChange={(e) => setCustomerName(e.target.value)} placeholder="Optional" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={customerPhone} maxLength={20} inputMode="tel" onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Optional" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Payment</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(["cash", "upi", "card"] as const).map((m) => (
+                <button key={m} type="button" onClick={() => setPayment(m)}
+                  className={"rounded-md border py-2 text-sm font-semibold uppercase transition " + (payment === m ? "border-primary bg-accent" : "border-border hover:border-primary")}>
+                  {m}
+                </button>
+              ))}
             </div>
           </div>
           <div className="rounded-lg border bg-secondary/40 p-3 space-y-1.5 text-sm">

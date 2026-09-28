@@ -51,7 +51,10 @@ export async function deleteProduct(id: string) {
   if (error) throw error;
 }
 
-export async function sellProduct(product: Product, qty: number, discount = 0) {
+export type PaymentMethod = "cash" | "upi" | "card";
+export type SaleExtras = { customerName?: string; customerPhone?: string; paymentMethod?: PaymentMethod; invoiceNo?: string };
+
+export async function sellProduct(product: Product, qty: number, discount = 0, extras: SaleExtras = {}) {
   if (qty <= 0) throw new Error("Quantity must be positive");
   if (qty > product.quantity) throw new Error("Not enough stock");
   if (discount < 0 || discount > 100) throw new Error("Discount must be 0-100%");
@@ -70,11 +73,42 @@ export async function sellProduct(product: Product, qty: number, discount = 0) {
     quantity: qty,
     unit_price: product.price,
     discount,
+    customer_name: (extras.customerName ?? "").trim().slice(0, 100),
+    customer_phone: (extras.customerPhone ?? "").trim().slice(0, 20),
+    payment_method: extras.paymentMethod ?? "cash",
+    invoice_no: extras.invoiceNo ?? "",
   }).select().single();
   if (sErr) throw sErr;
   return sale as Sale;
 }
 
+
+/** Return some or all of a sale: refunds it and puts items back in stock. */
+export async function returnSale(sale: Sale, qty: number) {
+  const remaining = sale.quantity - sale.returned_quantity;
+  if (qty <= 0 || qty > remaining) throw new Error(`You can return 1 to ${remaining} item(s)`);
+  const { data: product, error: pErr } = await supabase
+    .from("products").select("quantity, sold").eq("id", sale.product_id).single();
+  if (pErr) throw pErr;
+  const { error: sErr } = await supabase.from("sales")
+    .update({ returned_quantity: sale.returned_quantity + qty, returned_at: new Date().toISOString() })
+    .eq("id", sale.id);
+  if (sErr) throw sErr;
+  const { error: uErr } = await supabase.from("products")
+    .update({ quantity: product.quantity + qty, sold: Math.max(0, product.sold - qty) })
+    .eq("id", sale.product_id);
+  if (uErr) throw uErr;
+  return Number(sale.unit_price) * qty * (1 - Number(sale.discount) / 100);
+}
+
+export function paymentTotals(sales: Sale[]) {
+  const t: Record<string, number> = { cash: 0, upi: 0, card: 0 };
+  for (const s of sales) {
+    const q = s.quantity - s.returned_quantity;
+    t[s.payment_method] = (t[s.payment_method] ?? 0) + Number(s.unit_price) * q * (1 - Number(s.discount) / 100);
+  }
+  return t;
+}
 
 export function downloadMonthlyInvoice(opts: {
   month: number; // 0-11
@@ -102,7 +136,7 @@ export function downloadMonthlyInvoice(opts: {
 export function computeSummary(products: Product[], sales: Sale[] = []) {
   const totalProducts = products.length;
   const totalStock = products.reduce((s, p) => s + p.quantity, 0);
-  const totalSold = sales.reduce((s, x) => s + x.quantity, 0);
+  const totalSold = sales.reduce((s, x) => s + x.quantity - (x.returned_quantity ?? 0), 0);
 
   // Build a quick lookup of cost_price per product (fallback to estimate if 0/missing)
   const costOf = (productId: string, unitPrice: number) => {
@@ -117,9 +151,11 @@ export function computeSummary(products: Product[], sales: Sale[] = []) {
   let profit = 0;    // sales that closed above cost
   for (const sale of sales) {
     const unit = Number(sale.unit_price);
-    const gross = unit * sale.quantity;
+    const kept = sale.quantity - (sale.returned_quantity ?? 0);
+    if (kept <= 0) continue;
+    const gross = unit * kept;
     const net = gross * (1 - Number(sale.discount) / 100);
-    const itemCost = costOf(sale.product_id, unit) * sale.quantity;
+    const itemCost = costOf(sale.product_id, unit) * kept;
     const margin = net - itemCost;
     revenue += net;
     cost += itemCost;
