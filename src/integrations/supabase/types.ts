@@ -56,28 +56,46 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          customer_name: string
+          customer_phone: string
           discount: number
           id: string
+          invoice_no: string
+          payment_method: string
           product_id: string
           quantity: number
+          returned_at: string | null
+          returned_quantity: number
           unit_price: number
           user_id: string
         }
         Insert: {
           created_at?: string
+          customer_name?: string
+          customer_phone?: string
           discount?: number
           id?: string
+          invoice_no?: string
+          payment_method?: string
           product_id: string
           quantity: number
+          returned_at?: string | null
+          returned_quantity?: number
           unit_price: number
           user_id: string
         }
         Update: {
           created_at?: string
+          customer_name?: string
+          customer_phone?: string
           discount?: number
           id?: string
+          invoice_no?: string
+          payment_method?: string
           product_id?: string
           quantity?: number
+          returned_at?: string | null
+          returned_quantity?: number
           unit_price?: number
           user_id?: string
         }
