@@ -76,7 +76,7 @@ export function buildReport(products: Product[], sales: Sale[], period: Period, 
 export async function downloadReportExcel(opts: {
   label: string; products: Product[]; report: ReturnType<typeof buildReport>;
 }) {
-  const { default: writeXlsxFile } = await import("write-excel-file");
+  const { default: writeXlsxFile } = await import("write-excel-file/browser");
   const H = (value: string) => ({ value, fontWeight: "bold" as const, backgroundColor: "#F3E7C4" });
   const money = "#,##0.00";
   const r2 = (n: number) => Math.round(n * 100) / 100;
