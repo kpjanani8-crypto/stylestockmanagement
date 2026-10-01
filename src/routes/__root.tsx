@@ -7,6 +7,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { Toaster } from "@/frontend/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
