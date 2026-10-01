@@ -3,11 +3,12 @@
 // so any printer paired with the phone or laptop can print it.
 
 import type { InvoiceInput } from "./invoice";
+import { billFontCss, billFontScale } from "./printer";
 
 export type PaperWidth = "58mm" | "80mm" | "A4";
 
 const money = (n: number) =>
-  n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function escapeHtml(s: string): string {
   return s
@@ -50,7 +51,7 @@ export function buildReceiptHtml(inv: InvoiceInput, width: PaperWidth = "80mm"):
   @page { size: ${paper} auto; margin: 3mm; }
   * { box-sizing: border-box; }
   body { width: ${bodyWidth}; margin: 0 auto; padding: 0;
-         font-family: "Courier New", ui-monospace, monospace; color: #000; background: #fff;
+         font-family: ${billFontCss()}; zoom: ${billFontScale()}; color: #000; background: #fff;
          font-size: ${width === "58mm" ? "11px" : "12px"}; line-height: 1.45; }
   .center { text-align: center; }
   .shop { font-size: ${width === "58mm" ? "14px" : "16px"}; font-weight: 700; letter-spacing: .04em; }
@@ -86,7 +87,7 @@ export function buildReceiptHtml(inv: InvoiceInput, width: PaperWidth = "80mm"):
   ${line("Items", String(qtyTotal))}
   ${line("Subtotal", money(subtotal))}
   ${inv.discountPercent > 0 ? line(`Discount (${inv.discountPercent}%)`, "- " + money(discountAmt)) : ""}
-  ${line("TOTAL", "Rs " + money(total), "grand")}
+  ${line("TOTAL", money(total), "grand")}
   ${inv.paymentMethod ? line("Paid by", escapeHtml(inv.paymentMethod.toUpperCase())) : ""}
   <hr/>
   <div class="center muted">${escapeHtml(inv.footerNote || "Thank you for shopping with us!")}</div>

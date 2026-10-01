@@ -20,7 +20,11 @@ import { Input } from "@/frontend/ui/input";
 import { Label } from "@/frontend/ui/label";
 import { Textarea } from "@/frontend/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/frontend/ui/card";
-import { getPaperWidth, setPaperWidth, type PaperWidth } from "@/frontend/lib/printer";
+import {
+  getPaperWidth, setPaperWidth, type PaperWidth,
+  BILL_FONTS, getBillFont, setBillFont, billFontCss, type BillFont,
+  getBillFontSize, setBillFontSize, type BillFontSize,
+} from "@/frontend/lib/printer";
 import { printReceipt } from "@/frontend/lib/receipt";
 import { makeInvoiceNo } from "@/frontend/lib/invoice";
 
@@ -41,9 +45,13 @@ function SettingsPage() {
   const [form, setForm] = useState<ShopProfileInput>(emptyShopProfile);
   const [paper, setPaper] = useState<PaperWidth>("80mm");
   const [saving, setSaving] = useState(false);
+  const [font, setFont] = useState<BillFont>("mono");
+  const [fontSize, setFontSize] = useState<BillFontSize>("normal");
 
   useEffect(() => {
     setPaper(getPaperWidth());
+    setFont(getBillFont());
+    setFontSize(getBillFontSize());
   }, []);
 
   useEffect(() => {
@@ -190,6 +198,29 @@ function SettingsPage() {
                 <div className="text-xs text-muted-foreground">{p.hint}</div>
               </button>
             ))}
+          </div>
+          <div className="space-y-2">
+            <Label>Bill font</Label>
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+              {BILL_FONTS.map((f) => (
+                <button key={f.value} type="button" onClick={() => { setFont(f.value); setBillFont(f.value); }}
+                  className={"rounded-lg border p-3 text-left transition hover:border-primary " + (font === f.value ? "border-primary bg-accent" : "border-border")}>
+                  <div className="text-base" style={{ fontFamily: billFontCss(f.value) }}>₹ 1,250.00</div>
+                  <div className="text-xs text-muted-foreground">{f.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Text size</Label>
+            <div className="grid gap-3 grid-cols-3 max-w-sm">
+              {(["small", "normal", "large"] as const).map((sz) => (
+                <button key={sz} type="button" onClick={() => { setFontSize(sz); setBillFontSize(sz); }}
+                  className={"rounded-lg border py-2 text-sm font-semibold capitalize transition hover:border-primary " + (fontSize === sz ? "border-primary bg-accent" : "border-border")}>
+                  {sz}
+                </button>
+              ))}
+            </div>
           </div>
           <Button variant="outline" onClick={testPrint}>
             <Printer className="h-4 w-4 mr-2" /> Print a test bill
