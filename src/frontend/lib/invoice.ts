@@ -1,5 +1,6 @@
 // Client-side invoice generator. Opens a printable window so the user can
 // save as PDF or print. Shop name is stored in localStorage.
+import { billFontCss, billFontScale } from "./printer";
 
 const SHOP_KEY = "ssm:shop_name";
 
@@ -75,7 +76,7 @@ export function buildInvoiceHtml(inv: InvoiceInput): string {
 <title>Invoice ${escapeHtml(inv.invoiceNo)} — ${escapeHtml(inv.shopName)}</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  body { font-family: ${billFontCss()}; zoom: ${billFontScale()};
          margin: 0; padding: 40px; color: #111; background: #fff; }
   .wrap { max-width: 720px; margin: 0 auto; }
   .head { display: flex; justify-content: space-between; align-items: flex-start;

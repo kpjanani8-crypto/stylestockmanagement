@@ -78,7 +78,7 @@ export async function downloadReportExcel(opts: {
 }) {
   const { default: writeXlsxFile } = await import("write-excel-file/browser");
   const H = (value: string) => ({ value, fontWeight: "bold" as const, backgroundColor: "#F3E7C4" });
-  const money = "#,##0.00";
+  const money = "₹#,##0.00";
   const r2 = (n: number) => Math.round(n * 100) / 100;
 
   const summary = [
