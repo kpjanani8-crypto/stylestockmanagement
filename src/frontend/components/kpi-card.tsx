@@ -28,7 +28,7 @@ export function KpiCard({ label, value, icon: Icon, prefix, decimals = 0, accent
       <div className="relative flex items-start justify-between">
         <div>
           <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
-          <div className="mt-2 text-3xl font-bold font-display tracking-tight">
+          <div className="mt-2 text-3xl font-display tabular-nums">
             <AnimatedCounter value={value} prefix={prefix} decimals={decimals} />
           </div>
           {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
