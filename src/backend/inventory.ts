@@ -101,6 +101,28 @@ export async function returnSale(sale: Sale, qty: number) {
   return Number(sale.unit_price) * qty * (1 - Number(sale.discount) / 100);
 }
 
+/** Exchange: return items from a sale and sell another product instead.
+ *  Returns the price difference (positive = customer pays, negative = refund). */
+export async function exchangeSale(sale: Sale, returnQty: number, newProduct: Product, newQty: number) {
+  if (newProduct.id === sale.product_id && newQty === returnQty) throw new Error("Pick a different product or quantity");
+  if (newQty <= 0) throw new Error("New quantity must be positive");
+  const fresh = await supabase.from("products").select("*").eq("id", newProduct.id).single();
+  if (fresh.error) throw fresh.error;
+  let available = fresh.data.quantity;
+  if (newProduct.id === sale.product_id) available += returnQty;
+  if (newQty > available) throw new Error("Not enough stock for the new item");
+  const refund = await returnSale(sale, returnQty);
+  const { data: p2, error } = await supabase.from("products").select("*").eq("id", newProduct.id).single();
+  if (error) throw error;
+  await sellProduct(p2 as Product, newQty, 0, {
+    customerName: sale.customer_name,
+    customerPhone: sale.customer_phone,
+    paymentMethod: sale.payment_method as PaymentMethod,
+    invoiceNo: sale.invoice_no ? `${sale.invoice_no}-EX` : "EXCHANGE",
+  });
+  return Number(p2.price) * newQty - refund;
+}
+
 export function paymentTotals(sales: Sale[]) {
   const t: Record<string, number> = { cash: 0, upi: 0, card: 0 };
   for (const s of sales) {

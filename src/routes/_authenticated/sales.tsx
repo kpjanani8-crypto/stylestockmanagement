@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, RotateCcw, Search, Banknote, Smartphone, CreditCard } from "lucide-react";
-import { listSales, listProducts, returnSale, paymentTotals, type Sale } from "@/backend/inventory";
+import { Loader2, RotateCcw, Search, Banknote, Smartphone, CreditCard, ArrowLeftRight } from "lucide-react";
+import { listSales, listProducts, returnSale, exchangeSale, paymentTotals, type Sale, type Product } from "@/backend/inventory";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/frontend/ui/select";
 import { Card } from "@/frontend/ui/card";
 import { Button } from "@/frontend/ui/button";
 import { Input } from "@/frontend/ui/input";
@@ -23,6 +24,7 @@ function SalesPage() {
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: listProducts });
   const [search, setSearch] = useState("");
   const [returning, setReturning] = useState<Sale | null>(null);
+  const [exchanging, setExchanging] = useState<Sale | null>(null);
 
   const nameOf = (id: string) => products.find((p) => p.id === id)?.name ?? "Deleted product";
   const totals = paymentTotals(sales);
@@ -94,7 +96,10 @@ function SalesPage() {
                       {kept}{s.returned_quantity > 0 && <div className="text-xs text-destructive">{s.returned_quantity} returned</div>}
                     </td>
                     <td className="p-3 text-right tabular-nums font-semibold">{inr(amount)}</td>
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-right whitespace-nowrap space-x-2">
+                      <Button size="sm" variant="outline" disabled={kept === 0} onClick={() => setExchanging(s)}>
+                        <ArrowLeftRight className="h-3.5 w-3.5 mr-1.5" /> Exchange
+                      </Button>
                       <Button size="sm" variant="outline" disabled={kept === 0} onClick={() => setReturning(s)}>
                         <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Return
                       </Button>
@@ -108,7 +113,78 @@ function SalesPage() {
       </Card>
 
       {returning && <ReturnDialog sale={returning} name={nameOf(returning.product_id)} onClose={() => setReturning(null)} />}
+      {exchanging && <ExchangeDialog sale={exchanging} products={products} name={nameOf(exchanging.product_id)} onClose={() => setExchanging(null)} />}
     </div>
+  );
+}
+
+function ExchangeDialog({ sale, products, name, onClose }: { sale: Sale; products: Product[]; name: string; onClose: () => void }) {
+  const qc = useQueryClient();
+  const max = sale.quantity - sale.returned_quantity;
+  const [qty, setQty] = useState(String(max));
+  const [newId, setNewId] = useState("");
+  const [newQty, setNewQty] = useState("1");
+  const [busy, setBusy] = useState(false);
+  const q = Math.max(0, Math.floor(Number(qty) || 0));
+  const nq = Math.max(0, Math.floor(Number(newQty) || 0));
+  const newP = products.find((p) => p.id === newId);
+  const credit = Number(sale.unit_price) * q * (1 - Number(sale.discount) / 100);
+  const diff = (newP ? Number(newP.price) * nq : 0) - credit;
+
+  const confirm = async () => {
+    if (!newP) return;
+    setBusy(true);
+    try {
+      const d = await exchangeSale(sale, q, newP, nq);
+      qc.invalidateQueries({ queryKey: ["sales"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success(d >= 0 ? `Exchanged. Collect ${inr(d)} from customer.` : `Exchanged. Refund ${inr(-d)} to customer.`);
+      onClose();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader><DialogTitle>Exchange {name}</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Quantity given back (max {max})</Label>
+            <Input type="number" min="1" max={max} value={qty} onChange={(e) => setQty(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>New product</Label>
+            <Select value={newId} onValueChange={setNewId}>
+              <SelectTrigger><SelectValue placeholder="Choose product" /></SelectTrigger>
+              <SelectContent>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id} disabled={p.quantity === 0 && p.id !== sale.product_id}>
+                    {p.name} — {inr(Number(p.price))} ({p.quantity} in stock)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>New quantity</Label>
+            <Input type="number" min="1" value={newQty} onChange={(e) => setNewQty(e.target.value)} />
+          </div>
+          <div className="rounded-lg border bg-secondary/40 p-3 space-y-1 text-sm">
+            <div className="flex justify-between"><span>Credit for returned</span><span className="tabular-nums">{inr(credit)}</span></div>
+            <div className="flex justify-between"><span>New item total</span><span className="tabular-nums">{inr(newP ? Number(newP.price) * nq : 0)}</span></div>
+            <div className="flex justify-between font-semibold border-t pt-1">
+              <span>{diff >= 0 ? "Customer pays" : "Refund to customer"}</span><span className="tabular-nums">{inr(Math.abs(diff))}</span>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={confirm} disabled={busy || !newP || q < 1 || q > max || nq < 1} className="gold-gradient text-primary-foreground font-semibold">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm exchange"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
