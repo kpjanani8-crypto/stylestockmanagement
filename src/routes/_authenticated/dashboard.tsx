@@ -8,7 +8,7 @@ import { Badge } from "@/frontend/ui/badge";
 import { getLowStockThreshold } from "@/frontend/lib/billing-defaults";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Style Stock Management" }] }),
   component: DashboardPage,
 });
 

@@ -10,7 +10,7 @@ import { Button } from "@/frontend/ui/button";
 import { cn } from "@/frontend/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/reports")({
-  head: () => ({ meta: [{ title: "Reports — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Reports — Style Stock Management" }] }),
   component: ReportsPage,
 });
 

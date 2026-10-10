@@ -12,7 +12,7 @@ import { Button } from "@/frontend/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/frontend/ui/select";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Analytics — Style Stock Management" }] }),
   component: AnalyticsPage,
 });
 

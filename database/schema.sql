@@ -1,4 +1,4 @@
--- Style Stock Manager: complete database schema (all migrations combined, in order)
+-- Style Stock Management: complete database schema (all migrations combined, in order)
 
 -- ===== 20260520043213_f5f90988-20a8-417c-8bc8-b7536b932903.sql =====
 

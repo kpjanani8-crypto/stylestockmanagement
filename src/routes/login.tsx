@@ -11,7 +11,7 @@ import logo from "@/frontend/assets/logo.png";
 import { validateRealEmail } from "@/frontend/lib/email-guard";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Style Stock Management" }] }),
   component: LoginPage,
 });
 
@@ -136,7 +136,7 @@ function LoginPage() {
 
         <div className="relative flex items-center gap-3">
           <img src={logo} alt="Style Stock" className="h-10 w-10" />
-          <span className="font-display text-lg font-semibold text-white">Style Stock Manager</span>
+          <span className="font-display text-lg font-semibold text-white">Style Stock Management</span>
         </div>
 
         <div className="relative space-y-8 max-w-md">
@@ -171,7 +171,7 @@ function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-xs text-white/40">© {new Date().getFullYear()} Style Stock Manager</p>
+        <p className="relative text-xs text-white/40">© {new Date().getFullYear()} Style Stock Management</p>
       </div>
 
       {/* Right form panel */}
@@ -181,7 +181,7 @@ function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
             <img src={logo} alt="Style Stock" className="h-9 w-9" />
-            <span className="font-display text-base font-semibold">Style Stock Manager</span>
+            <span className="font-display text-base font-semibold">Style Stock Management</span>
           </div>
 
           <div className="mb-7">
