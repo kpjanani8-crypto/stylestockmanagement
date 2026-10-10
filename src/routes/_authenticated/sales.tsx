@@ -13,7 +13,7 @@ import { Badge } from "@/frontend/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/frontend/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/sales")({
-  head: () => ({ meta: [{ title: "Sales & Returns — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Sales & Returns — Style Stock Management" }] }),
   component: SalesPage,
 });
 

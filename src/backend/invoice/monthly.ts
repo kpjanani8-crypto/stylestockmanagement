@@ -32,7 +32,7 @@ export function renderMonthlyInvoiceHtml(opts: {
   return `<!doctype html><html><head><meta charset="utf-8"/><title>Monthly Invoice ${label}</title>
 <style>${invoiceCss}</style></head><body>
 <div class="head">
-  <div><div class="brand">Style Stock Manager</div><h1>Monthly Invoice</h1></div>
+  <div><div class="brand">Style Stock Management</div><h1>Monthly Invoice</h1></div>
   <div style="text-align:right"><div class="muted">Period</div><div style="font-weight:700">${label}</div><div class="muted" style="margin-top:8px">Invoice #${num}</div></div>
 </div>
 ${rows.length === 0 ? `<p style="text-align:center;color:#999;padding:48px 0">No sales recorded for ${label}.</p>` : `
@@ -54,7 +54,7 @@ ${rows.length === 0 ? `<p style="text-align:center;color:#999;padding:48px 0">No
   <div class="row"><span>Total Discount</span><span class="gold">− ${inr(discount)}</span></div>
   <div class="row grand"><span>Grand Total</span><span>${inr(total)}</span></div>
 </div>`}
-<div class="foot">Thank you for your business · Style Stock Manager</div>
+<div class="foot">Thank you for your business · Style Stock Management</div>
 <div class="noprint" style="text-align:center;margin-top:32px"><button onclick="window.print()" style="background:#d4af37;color:#1a1a1a;border:0;padding:12px 28px;font-weight:700;border-radius:6px;cursor:pointer">Print / Save as PDF</button></div>
 <script>${invoiceJs}</script>
 </body></html>`;

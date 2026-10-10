@@ -29,7 +29,7 @@ import { printReceipt } from "@/frontend/lib/receipt";
 import { makeInvoiceNo } from "@/frontend/lib/invoice";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Settings — Style Stock Management" }] }),
   component: SettingsPage,
 });
 

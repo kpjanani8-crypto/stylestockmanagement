@@ -20,7 +20,7 @@ import {
 } from "@/frontend/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/products")({
-  head: () => ({ meta: [{ title: "Products — Style Stock Manager" }] }),
+  head: () => ({ meta: [{ title: "Products — Style Stock Management" }] }),
   component: ProductsPage,
 });
 

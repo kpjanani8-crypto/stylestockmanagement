@@ -21,7 +21,7 @@ export function renderInvoiceHtml(d: InvoiceData): string {
   return `<!doctype html><html><head><meta charset="utf-8"/><title>Invoice ${d.num}</title>
 <style>${invoiceCss}</style></head><body>
 <div class="head">
-  <div><div class="brand">Style Stock Manager</div><h1>Invoice</h1></div>
+  <div><div class="brand">Style Stock Management</div><h1>Invoice</h1></div>
   <div style="text-align:right"><div class="muted">Invoice #</div><div style="font-weight:700">${d.num}</div><div class="muted" style="margin-top:8px">${d.date}</div></div>
 </div>
 <table>
@@ -33,7 +33,7 @@ export function renderInvoiceHtml(d: InvoiceData): string {
   <div class="row"><span>Discount (${d.discount}%)</span><span class="gold">− ${inr(discAmt)}</span></div>
   <div class="row grand"><span>Total</span><span>${inr(total)}</span></div>
 </div>
-<div class="foot">Thank you for your business · Style Stock Manager</div>
+<div class="foot">Thank you for your business · Style Stock Management</div>
 <div class="noprint" style="text-align:center;margin-top:32px"><button onclick="window.print()" style="background:#d4af37;color:#1a1a1a;border:0;padding:12px 28px;font-weight:700;border-radius:6px;cursor:pointer">Print / Save as PDF</button></div>
 <script>${invoiceJs}</script>
 </body></html>`;

@@ -1,4 +1,4 @@
-# Style Stock Manager — Project Structure
+# Style Stock Management — Project Structure
 
 ```text
 style-stock-manager/
