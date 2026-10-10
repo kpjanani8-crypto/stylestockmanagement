@@ -7,4 +7,5 @@
 - Shop profile page: set shop name, address and contact details; show them on all invoices.
 
 ## Done
+- Rename the app everywhere it appears to "Style Stock Management" (login, page titles, browser tab, phone install name, bills, invoices).
 - Restore the original NSF monogram logo (interlocked gold NSF with mannequin in the S), plus matching phone icons and browser-tab icon.
